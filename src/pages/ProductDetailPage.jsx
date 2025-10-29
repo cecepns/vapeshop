@@ -54,7 +54,12 @@ const ProductDetailPage = () => {
   };
 
   const handleWhatsAppOrder = () => {
-    const message = `Halo, saya tertarik dengan produk:\n\n${product.name}\nHarga: Rp ${product.price?.toLocaleString('id-ID')}\n\nMohon informasi lebih lanjut.`;
+    const formattedPrice = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(product.price);
+    const message = `Halo, saya tertarik dengan produk:\n\n${product.name}\nHarga: ${formattedPrice}\n\nMohon informasi lebih lanjut.`;
     // Remove any non-numeric characters from WhatsApp number
     const cleanWhatsapp = settings.whatsapp.replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(message)}`;
@@ -123,7 +128,11 @@ const ProductDetailPage = () => {
           <div data-aos="fade-left">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
             <p className="text-4xl font-bold text-primary-600 mb-6">
-              Rp {product.price?.toLocaleString('id-ID')}
+              {new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+                minimumFractionDigits: 0,
+              }).format(product.price)}
             </p>
 
             {/* Stock Status */}
@@ -185,7 +194,11 @@ const ProductDetailPage = () => {
                   <div className="p-4">
                     <h3 className="text-sm font-semibold mb-2 line-clamp-2">{relatedProduct.name}</h3>
                     <p className="text-lg font-bold text-primary-600 mb-3">
-                      Rp {relatedProduct.price?.toLocaleString('id-ID')}
+                      {new Intl.NumberFormat("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                        minimumFractionDigits: 0,
+                      }).format(relatedProduct.price)}
                     </p>
                     <Link
                       to={`/products/${relatedProduct.id}`}

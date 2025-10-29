@@ -187,7 +187,11 @@ const HomePage = () => {
                       {product.name}
                     </h3>
                     <p className="text-2xl font-bold text-primary-600 mb-4">
-                      Rp {product.price?.toLocaleString("id-ID")}
+                      {new Intl.NumberFormat("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                        minimumFractionDigits: 0,
+                      }).format(product.price)}
                     </p>
                     <Link
                       to={`/products/${product.id}`}

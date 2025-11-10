@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { productsAPI } from '../../utils/api';
+import { productsAPI, categoriesAPI } from '../../utils/api';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Swal from 'sweetalert2';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,12 +20,25 @@ const AdminProducts = () => {
     description: '',
     price: '',
     stock: '',
+    category_id: '',
     image: null
   });
 
   useEffect(() => {
+    fetchCategories();
     fetchProducts(currentPage, searchTerm);
   }, [currentPage, searchTerm]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await categoriesAPI.getAll();
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
 
   const fetchProducts = async (page, search = '') => {
     setLoading(true);
@@ -45,6 +60,7 @@ const AdminProducts = () => {
     formDataToSend.append('description', formData.description);
     formDataToSend.append('price', formData.price);
     formDataToSend.append('stock', formData.stock);
+    formDataToSend.append('category_id', formData.category_id);
     if (formData.image) {
       formDataToSend.append('image', formData.image);
     }
@@ -71,6 +87,7 @@ const AdminProducts = () => {
       description: product.description,
       price: product.price.toString(),
       stock: product.stock.toString(),
+      category_id: product.category_id || '',
       image: null
     });
     setShowModal(true);
@@ -107,6 +124,7 @@ const AdminProducts = () => {
       description: '',
       price: '',
       stock: '',
+      category_id: '',
       image: null
     });
   };
@@ -168,6 +186,9 @@ const AdminProducts = () => {
                   Produk
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Kategori
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Harga
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -191,6 +212,7 @@ const AdminProducts = () => {
                         <div className="bg-gray-300 h-4 w-32 rounded"></div>
                       </div>
                     </td>
+                    <td className="px-6 py-4"><div className="bg-gray-300 h-4 w-24 rounded"></div></td>
                     <td className="px-6 py-4"><div className="bg-gray-300 h-4 w-20 rounded"></div></td>
                     <td className="px-6 py-4"><div className="bg-gray-300 h-4 w-16 rounded"></div></td>
                     <td className="px-6 py-4"><div className="bg-gray-300 h-6 w-20 rounded-full"></div></td>
@@ -199,7 +221,7 @@ const AdminProducts = () => {
                 ))
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
                     Tidak ada produk ditemukan
                   </td>
                 </tr>
@@ -216,6 +238,11 @@ const AdminProducts = () => {
                         <div>
                           <div className="text-sm font-medium text-gray-900">{product.name}</div>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {product.category_name || '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -338,6 +365,24 @@ const AdminProducts = () => {
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Kategori
+                  </label>
+                  <select
+                    value={formData.category_id}
+                    onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

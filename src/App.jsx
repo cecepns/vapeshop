@@ -13,6 +13,7 @@ import ContactPage from './pages/ContactPage';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
+import AdminCategory from './pages/admin/AdminCategory';
 import AdminSettings from './pages/admin/AdminSettings';
 
 // Layout
@@ -87,6 +88,7 @@ function App() {
             <Routes>
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="categories" element={<AdminCategory />} />
               <Route path="settings" element={<AdminSettings />} />
             </Routes>
           </AdminLayout>

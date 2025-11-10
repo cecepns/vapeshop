@@ -52,17 +52,13 @@ const AboutPage = () => {
           <div data-aos="fade-right">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Cerita Kami</h2>
             <p className="text-gray-600 mb-4">
-              Didirikan dengan passion untuk menyediakan alternatif yang lebih baik bagi para perokok, 
-              Vape Shop Samarinda hadir sebagai solusi terpercaya di dunia vaping.
+              Nama "Vape Loajanan Vape Shop" yang disingkat menjadi VL Vape Shop, hadir dengan passion untuk menyediakan alternatif yang lebih baik bagi para perokok. VL Vape Shop hadir sebagai solusi terpercaya di dunia vaping.
             </p>
             <p className="text-gray-600 mb-4">
-              Kami berkomitmen untuk menyediakan produk-produk original, berkualitas, dan aman 
-              dengan harga yang terjangkau. Tim kami yang berpengalaman siap membantu Anda 
-              menemukan produk yang sesuai dengan kebutuhan.
+              Kami berkomitmen untuk menyediakan produk-produk original, berkualitas dan aman dengan harga terjangkau. Tim kami yang berpengalaman siap membantu anda menemukan produk yang sesuai dengan kebutuhan.
             </p>
             <p className="text-gray-600">
-              Dengan lokasi strategis di pusat kota Samarinda, kami mudah diakses dan siap 
-              melayani Anda dengan sepenuh hati.
+              Dengan lokasi strategis yang mudah diakses dan siap melayani anda dengan sepenuh hati.
             </p>
           </div>
           <div data-aos="fade-left">

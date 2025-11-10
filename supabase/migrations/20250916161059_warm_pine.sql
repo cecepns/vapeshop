@@ -2,6 +2,15 @@
 CREATE DATABASE IF NOT EXISTS vape_shop_db;
 USE vape_shop_db;
 
+-- Categories table
+CREATE TABLE categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Products table
 CREATE TABLE products (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,7 +60,15 @@ INSERT INTO settings (shop_name, address, phone, email, about, whatsapp) VALUES 
   '+62 857-5234-8507'
 );
 
--- Insert sample products
+-- Insert sample categories
+INSERT INTO categories (name, description) VALUES
+('Pod System', 'Perangkat vaping portable dengan sistem pod yang mudah digunakan'),
+('Starter Kit', 'Kit lengkap untuk pemula yang ingin memulai vaping'),
+('Liquid', 'E-liquid atau vape juice dengan berbagai rasa pilihan'),
+('Aksesori', 'Aksesori vaping seperti coil, battery, dan lainnya'),
+('Advanced Mod', 'Perangkat vaping advanced untuk pengguna berpengalaman');
+
+-- Insert sample products (without category_id - will be added by migration script)
 INSERT INTO products (name, description, price, stock, image) VALUES
 ('RELX Infinity Pod', '<p>Pod system terbaru dari RELX dengan teknologi Super Smooth dan kapasitas baterai 380mAh.</p><ul><li>Kapasitas: 1.9ml</li><li>Baterai: 380mAh</li><li>Charging: USB-C</li></ul>', 299000, 25, 'uploads-vapeshop-samarinda/sample1.jpg'),
 ('JUUL Starter Kit', '<p>Starter kit lengkap JUUL dengan 2 pods dan charger USB magnetic.</p><ul><li>Baterai: 200mAh</li><li>Pod capacity: 0.7ml</li><li>Nicotine: 3% dan 5%</li></ul>', 450000, 15, 'uploads-vapeshop-samarinda/sample2.jpg'),

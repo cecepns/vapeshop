@@ -135,8 +135,13 @@ const ProductDetailPage = () => {
               }).format(product.price)}
             </p>
 
-            {/* Stock Status */}
-            <div className="flex items-center mb-6">
+            {/* Stock Status & Category */}
+            <div className="flex items-center gap-3 mb-6">
+              {product.category_name && (
+                <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
+                  {product.category_name}
+                </span>
+              )}
               <span className="bg-secondary-100 text-secondary-700 px-3 py-1 rounded-full text-sm font-medium">
                 {product.stock > 0 ? `Stok: ${product.stock}` : 'Habis'}
               </span>

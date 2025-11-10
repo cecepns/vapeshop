@@ -105,6 +105,86 @@ app.get('/api/auth/verify', authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
 
+// Categories Routes
+app.get('/api/categories', async (req, res) => {
+  try {
+    const [categories] = await db.execute('SELECT * FROM categories ORDER BY name ASC');
+    res.json(categories);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/categories', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Category name is required' });
+    }
+
+    const [result] = await db.execute(
+      'INSERT INTO categories (name, description) VALUES (?, ?)',
+      [name, description || '']
+    );
+
+    res.status(201).json({ 
+      id: result.insertId, 
+      message: 'Category created successfully' 
+    });
+  } catch (error) {
+    console.error('Error creating category:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/categories/:id', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const categoryId = req.params.id;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Category name is required' });
+    }
+
+    const [existingCategories] = await db.execute('SELECT * FROM categories WHERE id = ?', [categoryId]);
+    
+    if (existingCategories.length === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    await db.execute(
+      'UPDATE categories SET name = ?, description = ? WHERE id = ?',
+      [name, description || '', categoryId]
+    );
+
+    res.json({ message: 'Category updated successfully' });
+  } catch (error) {
+    console.error('Error updating category:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+
+    const [existingCategories] = await db.execute('SELECT * FROM categories WHERE id = ?', [categoryId]);
+    
+    if (existingCategories.length === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    await db.execute('DELETE FROM categories WHERE id = ?', [categoryId]);
+
+    res.json({ message: 'Category deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Products Routes
 app.get('/api/products', async (req, res) => {
   try {
@@ -113,17 +193,17 @@ app.get('/api/products', async (req, res) => {
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
 
-    let query = 'SELECT * FROM products';
-    let countQuery = 'SELECT COUNT(*) as total FROM products';
+    let query = 'SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id';
+    let countQuery = 'SELECT COUNT(*) as total FROM products p';
     const params = [];
 
     if (search) {
-      query += ' WHERE name LIKE ? OR description LIKE ?';
-      countQuery += ' WHERE name LIKE ? OR description LIKE ?';
+      query += ' WHERE p.name LIKE ? OR p.description LIKE ?';
+      countQuery += ' WHERE p.name LIKE ? OR p.description LIKE ?';
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    query += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?';
     params.push(limit, offset);
 
     const [products] = await db.execute(query, params);
@@ -147,7 +227,10 @@ app.get('/api/products', async (req, res) => {
 
 app.get('/api/products/:id', async (req, res) => {
   try {
-    const [products] = await db.execute('SELECT * FROM products WHERE id = ?', [req.params.id]);
+    const [products] = await db.execute(
+      'SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?',
+      [req.params.id]
+    );
     
     if (products.length === 0) {
       return res.status(404).json({ error: 'Product not found' });
@@ -162,7 +245,7 @@ app.get('/api/products/:id', async (req, res) => {
 
 app.post('/api/products', authenticateToken, upload.single('image'), async (req, res) => {
   try {
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock, category_id } = req.body;
     const image = req.file ? `uploads-vapeshop-samarinda/${req.file.filename}` : null;
 
     if (!name || !description || !price || !stock || !image) {
@@ -170,8 +253,8 @@ app.post('/api/products', authenticateToken, upload.single('image'), async (req,
     }
 
     const [result] = await db.execute(
-      'INSERT INTO products (name, description, price, stock, image) VALUES (?, ?, ?, ?, ?)',
-      [name, description, parseFloat(price), parseInt(stock), image]
+      'INSERT INTO products (name, description, price, stock, image, category_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, description, parseFloat(price), parseInt(stock), image, category_id || null]
     );
 
     res.status(201).json({ 
@@ -186,7 +269,7 @@ app.post('/api/products', authenticateToken, upload.single('image'), async (req,
 
 app.put('/api/products/:id', authenticateToken, upload.single('image'), async (req, res) => {
   try {
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock, category_id } = req.body;
     const productId = req.params.id;
 
     // Get existing product
@@ -209,8 +292,8 @@ app.put('/api/products/:id', authenticateToken, upload.single('image'), async (r
     }
 
     await db.execute(
-      'UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image = ? WHERE id = ?',
-      [name, description, parseFloat(price), parseInt(stock), image, productId]
+      'UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image = ?, category_id = ? WHERE id = ?',
+      [name, description, parseFloat(price), parseInt(stock), image, category_id || null, productId]
     );
 
     res.json({ message: 'Product updated successfully' });

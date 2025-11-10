@@ -28,7 +28,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center" data-aos="fade-up">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Welcome to <span className="text-accent-500">Vape Shop</span>
+              Welcome to <span className="text-accent-500">VL VapeShop </span>
             </h1>
             <p className="text-xl md:text-2xl mb-8">
               Toko vape terpercaya di Samarinda dengan koleksi terlengkap
@@ -183,6 +183,13 @@ const HomePage = () => {
                     )}
                   </div>
                   <div className="p-6">
+                    {product.category_name && (
+                      <div className="mb-2">
+                        <span className="bg-secondary-100 text-secondary-700 px-2 py-1 rounded text-xs font-medium">
+                          {product.category_name}
+                        </span>
+                      </div>
+                    )}
                     <h3 className="text-lg font-semibold mb-2">
                       {product.name}
                     </h3>

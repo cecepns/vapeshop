@@ -127,6 +127,13 @@ const ProductsPage = () => {
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
                 <div className="p-6">
+                  {product.category_name && (
+                    <div className="mb-2">
+                      <span className="bg-secondary-100 text-secondary-700 px-2 py-1 rounded text-xs font-medium">
+                        {product.category_name}
+                      </span>
+                    </div>
+                  )}
                   <h3 className="text-lg font-semibold mb-2 line-clamp-2">
                     {product.name}
                   </h3>

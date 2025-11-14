@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { productsAPI } from "../utils/api";
+import { productsAPI, categoriesAPI } from "../utils/api";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -8,17 +8,63 @@ const ProductsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
-    fetchProducts(currentPage, searchTerm);
-  }, [currentPage, searchTerm]);
+    fetchCategories();
+  }, []);
 
-  const fetchProducts = async (page, search = "") => {
+  useEffect(() => {
+    fetchProducts(currentPage, searchTerm, selectedCategory);
+  }, [currentPage, searchTerm, selectedCategory]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await categoriesAPI.getAll();
+      setCategories(response.data || []);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  const fetchProducts = async (page, search = "", categoryId = "") => {
     setLoading(true);
     try {
       const response = await productsAPI.getAll(page, 10);
-      setProducts(response.data.data);
-      setTotalPages(response.data.totalPages);
+      let filteredProducts = response.data.data || [];
+
+      // Filter by category if selected
+      if (categoryId) {
+        filteredProducts = filteredProducts.filter(
+          (product) => product.category_id === parseInt(categoryId)
+        );
+      }
+
+      // Filter by search term if provided
+      if (search) {
+        filteredProducts = filteredProducts.filter(
+          (product) =>
+            product.name.toLowerCase().includes(search.toLowerCase()) ||
+            product.description.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+
+      // Calculate pagination based on filtered results
+      const totalFilteredProducts = filteredProducts.length;
+      const itemsPerPage = 10;
+      const totalFilteredPages = Math.ceil(totalFilteredProducts / itemsPerPage);
+
+      // Get current page items
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+      setProducts(paginatedProducts);
+      setTotalPages(totalFilteredPages);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -29,7 +75,12 @@ const ProductsPage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchProducts(1, searchTerm);
+    fetchProducts(1, searchTerm, selectedCategory);
+  };
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -49,8 +100,9 @@ const ProductsPage = () => {
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-8" data-aos="fade-up" data-aos-delay="100">
+        {/* Search and Filter Bar */}
+        <div className="mb-8 space-y-4" data-aos="fade-up" data-aos-delay="100">
+          {/* Search Bar */}
           <form onSubmit={handleSearch} className="max-w-md mx-auto">
             <div className="relative">
               <input
@@ -75,6 +127,23 @@ const ProductsPage = () => {
               </svg>
             </div>
           </form>
+
+          {/* Category Filter */}
+          <div className="flex justify-center">
+            <select
+              value={selectedCategory}
+              onChange={handleCategoryChange}
+              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-gray-700 font-medium"
+              disabled={categoriesLoading}
+            >
+              <option value="">Semua Kategori</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Products Grid */}

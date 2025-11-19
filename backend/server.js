@@ -192,22 +192,37 @@ app.get('/api/products', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
+    const categoryId = req.query.category_id || '';
 
     let query = 'SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id';
     let countQuery = 'SELECT COUNT(*) as total FROM products p';
     const params = [];
+    const countParams = [];
+    const conditions = [];
 
     if (search) {
-      query += ' WHERE p.name LIKE ? OR p.description LIKE ?';
-      countQuery += ' WHERE p.name LIKE ? OR p.description LIKE ?';
+      conditions.push('(p.name LIKE ? OR p.description LIKE ?)');
       params.push(`%${search}%`, `%${search}%`);
+      countParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (categoryId) {
+      conditions.push('p.category_id = ?');
+      params.push(categoryId);
+      countParams.push(categoryId);
+    }
+
+    if (conditions.length > 0) {
+      const whereClause = ' WHERE ' + conditions.join(' AND ');
+      query += whereClause;
+      countQuery += whereClause;
     }
 
     query += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?';
     params.push(limit, offset);
 
     const [products] = await db.execute(query, params);
-    const [countResult] = await db.execute(countQuery, search ? [`%${search}%`, `%${search}%`] : []);
+    const [countResult] = await db.execute(countQuery, countParams);
     
     const total = countResult[0].total;
     const totalPages = Math.ceil(total / limit);

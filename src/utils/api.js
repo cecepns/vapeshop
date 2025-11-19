@@ -18,7 +18,15 @@ api.interceptors.request.use((config) => {
 
 // Products API
 export const productsAPI = {
-  getAll: (page = 1, limit = 10) => api.get(`/products?page=${page}&limit=${limit}`),
+  getAll: (page = 1, limit = 10, search = '', categoryId = '') => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+    if (search) params.append('search', search);
+    if (categoryId) params.append('category_id', categoryId);
+    return api.get(`/products?${params.toString()}`);
+  },
   getById: (id) => api.get(`/products/${id}`),
   create: (formData) => api.post('/products', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }

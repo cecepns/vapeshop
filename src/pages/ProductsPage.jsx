@@ -34,37 +34,12 @@ const ProductsPage = () => {
   const fetchProducts = async (page, search = "", categoryId = "") => {
     setLoading(true);
     try {
-      const response = await productsAPI.getAll(page, 10);
-      let filteredProducts = response.data.data || [];
+      const response = await productsAPI.getAll(page, 10, search, categoryId);
+      const productsData = response.data.data || [];
+      const paginationData = response.data;
 
-      // Filter by category if selected
-      if (categoryId) {
-        filteredProducts = filteredProducts.filter(
-          (product) => product.category_id === parseInt(categoryId)
-        );
-      }
-
-      // Filter by search term if provided
-      if (search) {
-        filteredProducts = filteredProducts.filter(
-          (product) =>
-            product.name.toLowerCase().includes(search.toLowerCase()) ||
-            product.description.toLowerCase().includes(search.toLowerCase())
-        );
-      }
-
-      // Calculate pagination based on filtered results
-      const totalFilteredProducts = filteredProducts.length;
-      const itemsPerPage = 10;
-      const totalFilteredPages = Math.ceil(totalFilteredProducts / itemsPerPage);
-
-      // Get current page items
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-
-      setProducts(paginatedProducts);
-      setTotalPages(totalFilteredPages);
+      setProducts(productsData);
+      setTotalPages(paginationData.totalPages || 1);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -75,7 +50,6 @@ const ProductsPage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchProducts(1, searchTerm, selectedCategory);
   };
 
   const handleCategoryChange = (e) => {
